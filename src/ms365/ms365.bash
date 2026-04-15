@@ -1,13 +1,13 @@
 _require_module "json"
 
 # MS365 app registration and authentication
-# The "_rig" app supports both:
+# The "_jig" app supports both:
 #   - Application permissions (client credentials) — for APIs like sensitivity labels
 #   - Delegated permissions (device code flow) — for APIs needing user context
 
-_MS365_APP_NAME="_rig"
+_MS365_APP_NAME="_jig"
 _MS365_GRAPH_ID="00000003-0000-0000-c000-000000000000"
-_MS365_TOKEN_DIR="$HOME/.rig/ms365"
+_MS365_TOKEN_DIR="$HOME/.jig/ms365"
 _MS365_APP_TOKEN_FILE="$_MS365_TOKEN_DIR/.app_token"
 _MS365_USER_TOKEN_FILE="$_MS365_TOKEN_DIR/.user_token"
 
@@ -22,7 +22,7 @@ _MS365_DELEGATED_PERMISSIONS=(
 )
 
 ms365_app_setup() {
-    _description "Create or update the _tome app registration with required MS365 permissions"
+    _description "Create or update the _jig app registration with required MS365 permissions"
     _requires az || return 1
     _param_parse "$@" || return 1
 
@@ -124,7 +124,7 @@ ms365_app_setup() {
     # Create client secret for application permissions
     local secret_result
     secret_result=$(_exec az ad app credential reset \
-        --id "$app_id" --display-name "rig" --output json) || {
+        --id "$app_id" --display-name "jig" --output json) || {
         _message_error "Failed to create client secret"
         return 1
     }
@@ -144,7 +144,7 @@ ms365_app_setup() {
 }
 
 ms365_app_show() {
-    _description "Show the _tome app registration and its permissions"
+    _description "Show the _jig app registration and its permissions"
     _requires az || return 1
     _param_parse "$@" || return 1
 
@@ -163,7 +163,7 @@ ms365_app_show() {
 # --- Delegated auth (device code flow, user context) ---
 
 ms365_login() {
-    _description "Authenticate with the _tome app using device code flow"
+    _description "Authenticate with the _jig app using device code flow"
     _requires curl || return 1
     _param_parse "$@" || return 1
 
