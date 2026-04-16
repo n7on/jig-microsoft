@@ -1,6 +1,11 @@
 _require_module "json"
 
 _azure_context_dir="$HOME/.jig/azure/contexts"
+_azure_active_file="$HOME/.jig/azure/active"
+
+if [[ -f "$_azure_active_file" ]]; then
+    export AZURE_CONFIG_DIR="$_azure_context_dir/$(cat "$_azure_active_file")"
+fi
 
 _azure_account_get_subscriptions() {
     az account list --query "[].name" -o tsv 2>/dev/null | \
@@ -21,7 +26,7 @@ azure_context_list() {
     _param_parse "$@" || return 1
 
     local current=""
-    [[ -n "${AZURE_CONFIG_DIR:-}" ]] && current=$(basename "$AZURE_CONFIG_DIR")
+    [[ -f "$_azure_active_file" ]] && current=$(cat "$_azure_active_file")
 
     local dir
     {
@@ -50,6 +55,11 @@ azure_context_add() {
     fi
 
     mkdir -p "$context_path"
+
+    if [[ ! -f "$_azure_context_dir/.gitignore" ]]; then
+        echo "*" > "$_azure_context_dir/.gitignore"
+    fi
+
     AZURE_CONFIG_DIR="$context_path" az login
 }
 
@@ -59,7 +69,7 @@ azure_context_switch() {
     _param_parse "$@" || return 1
 
     if [[ "$name" == "default" ]]; then
-        unset AZURE_CONFIG_DIR
+        rm -f "$_azure_active_file"
         return 0
     fi
 
@@ -69,7 +79,7 @@ azure_context_switch() {
         return 1
     fi
 
-    export AZURE_CONFIG_DIR="$context_path"
+    echo "$name" > "$_azure_active_file"
 }
 
 azure_context_remove() {
@@ -84,7 +94,7 @@ azure_context_remove() {
     fi
 
     local current=""
-    [[ -n "${AZURE_CONFIG_DIR:-}" ]] && current=$(basename "$AZURE_CONFIG_DIR")
+    [[ -f "$_azure_active_file" ]] && current=$(cat "$_azure_active_file")
     if [[ "$name" == "$current" ]]; then
         _message_error "Cannot remove active context '$name'. Switch away first."
         return 1
